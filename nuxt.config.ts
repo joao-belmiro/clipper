@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   modules: ["@nuxtjs/tailwindcss"],
   css: ["~/assets/css/main.css"],
   app: {
-    baseURL: '/retro-clipper',
+    baseURL: '/retro-clipper/',
     head: {
       title: "Analogue Clipboard Station",
       meta: [
