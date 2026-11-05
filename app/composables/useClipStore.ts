@@ -1,6 +1,6 @@
 import { effectScope } from "vue";
 
-export type ItemType = "code" | "prompt" | "color" | "text";
+export type ItemType = "code" | "prompt" | "color" | "url" | "email" | "text";
 
 export interface ClipItem {
   id: number;
@@ -171,8 +171,38 @@ function playSoundDelete(): void {
   }
 }
 
+function getSafeUrl(text: string): URL | null {
+  const value = text.trim();
+  if (!value || /\s/.test(value)) return null;
+
+  const hasHttpScheme = /^https?:\/\//i.test(value);
+  const isLocalhostWithPort = /^localhost:\d+(?:\/|$)/i.test(value);
+  if (
+    /^[a-z][a-z\d+.-]*:/i.test(value) &&
+    !hasHttpScheme &&
+    !isLocalhostWithPort
+  )
+    return null;
+
+  try {
+    const url = new URL(hasHttpScheme ? value : `https://${value}`);
+    if (!["http:", "https:"].includes(url.protocol)) return null;
+    if (
+      !url.hostname.includes(".") &&
+      !url.hostname.includes(":") &&
+      url.hostname !== "localhost"
+    )
+      return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
+
 function detectType(text: string): ItemType {
   const t = text.trim();
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(t)) return "email";
+  if (getSafeUrl(t)) return "url";
   if (/^#([0-9A-F]{3}){1,2}$/i.test(t) || /^rgb\(/.test(t)) return "color";
   if (
     /(\bact as\b|\byou are\b|\bprompt:\b|\bsystem:\b|\bignore previous\b|\/imagine\b|\bstep-by-step\b|\bcontext:\b|\brules:\b|\boutput format:\b|\bllm\b|\bgpt\b|\bgemini\b|\bclaude\b|\bmidjourney\b|```)/i.test(
@@ -193,7 +223,7 @@ type StoreReturn = ReturnType<typeof createStore>;
 let _cache: StoreReturn | null = null;
 const _scope = effectScope(true);
 
-function createStore(): StoreReturn {
+function createStore() {
   return _scope.run(() => {
     const filteredAndSortedItems = computed(() => {
       let result = [...items.value];
@@ -371,6 +401,10 @@ function createStore(): StoreReturn {
 
     function getTypeBadgeClass(type: ItemType): string {
       switch (type) {
+        case "url":
+          return "bg-cyan-900/40 text-cyan-300 border-cyan-500";
+        case "email":
+          return "bg-emerald-900/40 text-emerald-300 border-emerald-500";
         case "code":
           return "bg-blue-900/40 text-blue-300 border-blue-500";
         case "color":
@@ -384,6 +418,10 @@ function createStore(): StoreReturn {
 
     function getTypeBorderClass(type: ItemType): string {
       switch (type) {
+        case "url":
+          return "border-l-4 border-l-cyan-500";
+        case "email":
+          return "border-l-4 border-l-emerald-500";
         case "code":
           return "border-l-4 border-l-blue-500";
         case "color":
@@ -397,6 +435,10 @@ function createStore(): StoreReturn {
 
     function getTypeLabel(type: ItemType): string {
       switch (type) {
+        case "url":
+          return "WEB // URL";
+        case "email":
+          return "CONTACT // EMAIL";
         case "code":
           return "SNIPPET // CODE";
         case "color":
@@ -411,7 +453,11 @@ function createStore(): StoreReturn {
     async function init(): Promise<void> {
       db = await openDB();
       const stored = await idbGetAll();
-      items.value = stored.map((s) => ({ ...s, justCopied: false }));
+      items.value = stored.map((s) => ({
+        ...s,
+        type: detectType(s.content),
+        justCopied: false,
+      }));
     }
 
     function dispose(): void {
@@ -458,6 +504,7 @@ function createStore(): StoreReturn {
       getTypeBadgeClass,
       getTypeBorderClass,
       getTypeLabel,
+      getSafeUrl,
       init,
       dispose,
       loadInitialSettings,

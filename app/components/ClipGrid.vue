@@ -68,6 +68,35 @@
           </div>
         </div>
 
+        <div v-else-if="item.type === 'url' && getSafeUrl(item.content)"
+          class="flex flex-col gap-3 border-l-2 border-cyan-400 bg-cyan-500/5 p-3">
+          <div class="flex items-center justify-between gap-3 text-[10px] font-bold uppercase">
+            <span class="text-cyan-300">↗ Web destination</span>
+            <a :href="getSafeUrl(item.content)?.href" target="_blank" rel="noopener noreferrer"
+              class="shrink-0 text-cyan-200 underline underline-offset-4 hover:text-white">Open link ↗</a>
+          </div>
+          <div class="min-w-0">
+            <p class="mb-1 truncate text-sm font-bold text-cyan-100">{{ getSafeUrl(item.content)?.host }}</p>
+            <a :href="getSafeUrl(item.content)?.href" target="_blank" rel="noopener noreferrer"
+              class="block break-all text-xs leading-relaxed text-cyan-200/80 underline decoration-cyan-500/40 underline-offset-2 hover:text-white">
+              {{ item.content }}
+            </a>
+          </div>
+        </div>
+
+        <div v-else-if="item.type === 'email'"
+          class="flex flex-col gap-3 border-l-2 border-emerald-400 bg-emerald-500/5 p-3">
+          <div class="flex items-center justify-between gap-3 text-[10px] font-bold uppercase">
+            <span class="text-emerald-300">✉ Direct contact</span>
+            <a :href="`mailto:${item.content}`"
+              class="shrink-0 text-emerald-200 underline underline-offset-4 hover:text-white">Compose email ↗</a>
+          </div>
+          <a :href="`mailto:${item.content}`"
+            class="break-all text-sm font-bold leading-relaxed text-emerald-100 underline decoration-emerald-500/40 underline-offset-2 hover:text-white">
+            {{ item.content }}
+          </a>
+        </div>
+
         <div v-else-if="item.type === 'color'"
           class="flex items-center justify-center p-6 inner-box border border-inherit gap-4">
           <div class="w-12 h-12 border-2 border-inherit shadow-md rounded-full shrink-0"
@@ -105,6 +134,6 @@
 const {
   paginatedItems, filteredAndSortedItems, searchQuery,
   copyWithFeedback, removeItem, resetFilters,
-  getTypeBadgeClass, getTypeBorderClass, getTypeLabel,
+  getTypeBadgeClass, getTypeBorderClass, getTypeLabel, getSafeUrl,
 } = useClipStore()
 </script>

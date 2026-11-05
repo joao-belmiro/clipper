@@ -4,17 +4,30 @@
     class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-inherit pb-6 mb-6 gap-4 w-full">
     <div>
       <h1 class="text-2xl sm:text-3xl font-bold tracking-wide title-text leading-tight mb-1">&gt;
-        DEVSCRATCHPAD_v11.0</h1>
+        CLIPPER_v1.0</h1>
       <p class="text-[11px] sm:text-xs uppercase tracking-wider font-bold muted-text opacity-90">High-Performance
         Analogue Clipboard Station</p>
     </div>
 
-    <button @click="toggleConfig"
-      class="px-4 py-2 border-2 border-inherit font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all self-end sm:self-auto active:scale-95"
-      :class="isConfigOpen ? 'btn-on shadow-lg' : 'inner-box hover:border-current'">
-      <span class="text-base leading-none">{{ isConfigOpen ? '✕' : '☰' }}</span>
-      <span>{{ isConfigOpen ? 'CLOSE SETUP' : 'DECK SETUP' }}</span>
-    </button>
+    <div class="flex flex-wrap items-center justify-end gap-3 self-end sm:self-auto">
+      <a
+        href="https://ko-fi.com/joaocarlos67"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Donate to support Clipper on Ko-fi"
+        class="donation-button btn-action group flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5 active:scale-95"
+      >
+        <span aria-hidden="true" class="text-base leading-none transition-transform group-hover:scale-125 animate-pulse">♥</span>
+        <span>SUPPORT THE PROJECT</span>
+      </a>
+
+      <button @click="toggleConfig"
+        class="px-4 py-2 border-2 border-inherit font-bold text-xs uppercase tracking-wider flex items-center gap-2 transition-all active:scale-95"
+        :class="isConfigOpen ? 'btn-on shadow-lg' : 'inner-box hover:border-current'">
+        <span class="text-base leading-none">{{ isConfigOpen ? '✕' : '☰' }}</span>
+        <span>{{ isConfigOpen ? 'CLOSE SETUP' : 'DECK SETUP' }}</span>
+      </button>
+    </div>
   </div>
 
   <!-- SETUP DRAWER -->

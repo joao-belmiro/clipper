@@ -83,6 +83,18 @@
           <span>🎨 COLOR</span>
           <span class="px-1.5 bg-black/40 text-[10px] rounded-full font-mono">{{ getCount('color') }}</span>
         </button>
+        <button @click="setFilter('url')"
+          class="px-3.5 py-2 border border-inherit flex items-center gap-2 transition-all"
+          :class="selectedFilter === 'url' ? 'btn-on shadow-sm' : 'channel-box text-cyan-400 hover:opacity-100 hover:border-current'">
+          <span>🔗 URL</span>
+          <span class="px-1.5 bg-black/40 text-[10px] rounded-full font-mono">{{ getCount('url') }}</span>
+        </button>
+        <button @click="setFilter('email')"
+          class="px-3.5 py-2 border border-inherit flex items-center gap-2 transition-all"
+          :class="selectedFilter === 'email' ? 'btn-on shadow-sm' : 'channel-box text-emerald-400 hover:opacity-100 hover:border-current'">
+          <span>✉ EMAIL</span>
+          <span class="px-1.5 bg-black/40 text-[10px] rounded-full font-mono">{{ getCount('email') }}</span>
+        </button>
         <button @click="setFilter('text')"
           class="px-3.5 py-2 border border-inherit flex items-center gap-2 transition-all"
           :class="selectedFilter === 'text' ? 'btn-on shadow-sm' : 'channel-box text-gray-400 hover:opacity-100 hover:border-current'">
