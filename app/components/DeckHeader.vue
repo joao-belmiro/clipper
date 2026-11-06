@@ -4,9 +4,12 @@
     class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-inherit pb-6 mb-6 gap-4 w-full">
     <div>
       <h1 class="text-2xl sm:text-3xl font-bold tracking-wide title-text leading-tight mb-1">&gt;
-        CLIPPER_v1.0</h1>
-      <p class="text-[11px] sm:text-xs uppercase tracking-wider font-bold muted-text opacity-90">High-Performance
-        Analogue Clipboard Station</p>
+        ONLINE CLIPBOARD</h1>
+      <p class="text-[11px] sm:text-xs uppercase tracking-wider font-bold muted-text opacity-90">CLIPPER_v1.0 // FREE
+        CLIPBOARD MANAGER &amp; HISTORY</p>
+      <p class="mt-2 max-w-xl text-xs leading-relaxed muted-text">
+        Save, search, and copy text, code, prompts, and links. Your clipboard history stays in this browser.
+      </p>
     </div>
 
     <div class="flex flex-wrap items-center justify-end gap-3 self-end sm:self-auto">
@@ -14,11 +17,12 @@
         href="https://ko-fi.com/joaocarlos67"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Donate to support Clipper on Ko-fi"
-        class="donation-button btn-action group flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5 active:scale-95"
+        aria-label="Support Clipper on Ko-fi"
+        title="Support Clipper on Ko-fi"
+        class="donation-button btn-action group inline-flex min-h-10 items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-95"
       >
-        <span aria-hidden="true" class="text-base leading-none transition-transform group-hover:scale-125 animate-pulse">♥</span>
-        <span>SUPPORT THE PROJECT</span>
+        <span aria-hidden="true" class="donation-mark text-base leading-none transition-transform group-hover:scale-125">♥</span>
+        <span>SUPPORT CLIPPER</span>
       </a>
 
       <button @click="toggleConfig"

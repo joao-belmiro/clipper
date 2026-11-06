@@ -18,6 +18,7 @@
 .radius-sharp .inner-box,
 .radius-sharp .channel-box,
 .radius-sharp button,
+.radius-sharp .donation-button,
 .radius-sharp textarea,
 .radius-sharp input,
 .radius-sharp kbd,
@@ -34,6 +35,7 @@
   border-radius: 12px !important;
 }
 .radius-smooth button,
+.radius-smooth .donation-button,
 .radius-smooth textarea,
 .radius-smooth input,
 .radius-smooth kbd,
@@ -57,6 +59,7 @@
   border-radius: 20px !important;
 }
 .radius-pill button,
+.radius-pill .donation-button,
 .radius-pill .type-badge {
   border-radius: 9999px !important;
 }
@@ -303,6 +306,59 @@
   ) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.donation-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  text-decoration: none;
+}
+.donation-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.32) 50%,
+    transparent 80%
+  );
+  transform: translateX(-130%);
+  transition: transform 0.55s ease;
+}
+.donation-button:hover::before,
+.donation-button:focus-visible::before {
+  transform: translateX(130%);
+}
+.donation-button > span {
+  position: relative;
+  z-index: 1;
+}
+.donation-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.theme-cyberpunk .donation-button:hover {
+  box-shadow: 0 0 18px rgba(0, 255, 255, 0.75);
+}
+.theme-lofi .donation-button:hover {
+  box-shadow: 4px 3px 0 #000000, 0 0 0 2px rgba(140, 88, 58, 0.25);
+}
+.theme-rain .donation-button:hover {
+  box-shadow: 0 0 18px rgba(125, 211, 252, 0.7);
+}
+.theme-puredark .donation-button:hover {
+  box-shadow: 0 0 18px rgba(0, 255, 102, 0.45);
+}
+.theme-glass .donation-button {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.theme-glass .donation-button:hover {
+  box-shadow: 0 0 20px rgba(192, 132, 252, 0.45);
 }
 
 /* UPGRADED PUNCHY COPY ANIMATION */

@@ -1,6 +1,6 @@
-# Nuxt Minimal Starter
+# Clipper
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Static Nuxt app for managing a private, browser-local clipboard history.
 
 ## Setup
 
@@ -38,38 +38,26 @@ yarn dev
 bun run dev
 ```
 
-## Production
+## Static production build
 
-Build the application for production:
+Generate the static site into `.output/public`:
 
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
+Publish the contents of `.output/public` to a static web server or hosting provider. No Node.js server is needed at runtime. The app is configured for the `/retro-clipper/` base path.
+
+Preview the generated files locally with:
 
 ```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+To regenerate the static output explicitly:
+
+```bash
+npm run generate
+```
+
+For local development, use `npm run dev`; it runs the Nuxt development server and is not the production hosting mode.
