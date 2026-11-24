@@ -1,37 +1,29 @@
-# 🎯 Setup Rápido - Branch Master + Nginx Local
+# 🎯 Setup Rápido - Branch Master + Nginx na VPS
 
-**Para você que está usando branch `master` e Nginx em `/opt/nginx/html/retro-clipper/`**
+**Para a branch `master` e o Nginx da VPS em `/opt/nginx/html/retro-clipper/`**
 
 ## ⚡ 5 Passos (10 minutos)
 
 ### 1️⃣ SSH Setup (Sua Máquina)
 
 ```bash
-# Se não tiver chave SSH
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+# Gere uma chave dedicada no seu Linux local
+ssh-keygen -t ed25519 -f ~/.ssh/github-actions-vps -C "github-actions-deploy" -N ""
 
-# Autorizar sua própria máquina (para localhost)
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
+# Instale a chave pública na conta correta DA VPS
+ssh-copy-id -i ~/.ssh/github-actions-vps.pub SEU_USUARIO@IP_PUBLICO_DA_VPS
 
-# Testar
-ssh localhost
-# Deve logar sem pedir senha
-exit
+# Teste a chave privada contra a VPS
+ssh -i ~/.ssh/github-actions-vps -o IdentitiesOnly=yes SEU_USUARIO@IP_PUBLICO_DA_VPS
 ```
 
-### 2️⃣ Preparar Nginx
+### 2️⃣ Preparar Nginx na VPS
+
+Execute esses comandos conectado à VPS; substitua `SEU_USUARIO` pelo valor que será usado em `VPS_USER`.
 
 ```bash
-# Criar/confirmar diretório
-mkdir -p /opt/nginx/html/retro-clipper
-
-# Dar permissões
-chmod 755 /opt/nginx/html/retro-clipper
-
-# Testar permissões
-touch /opt/nginx/html/retro-clipper/.test && rm /opt/nginx/html/retro-clipper/.test
-# Deve funcionar ✅
+sudo mkdir -p /opt/nginx/html/retro-clipper
+sudo chown SEU_USUARIO:SEU_USUARIO /opt/nginx/html/retro-clipper
 ```
 
 ### 3️⃣ Adicionar Secrets no GitHub
@@ -42,28 +34,25 @@ Clique em **New repository secret** e adicione:
 
 **Secret 1: `VPS_HOST`**
 ```
-127.0.0.1
+IP público ou hostname da VPS (ex.: 203.0.113.10 ou vps.seudominio.com)
 ```
 
 **Secret 2: `VPS_USER`**
 ```
-seu-usuario-linux
+Usuário SSH da VPS autorizado para essa chave e com permissão de escrita no diretório
 ```
 
 **Secret 3: `SSH_PRIVATE_KEY`**
 ```
-(Cole todo o conteúdo de ~/.ssh/id_rsa)
-Inclua as linhas -----BEGIN RSA PRIVATE KEY----- e -----END RSA PRIVATE KEY-----
+(Cole todo o conteúdo de ~/.ssh/github-actions-vps, sem .pub)
+Inclua as linhas BEGIN/END e preserve as quebras de linha
 ```
 
 Como copiar:
 ```bash
-# macOS
-cat ~/.ssh/id_rsa | pbcopy
-
-# Linux
-cat ~/.ssh/id_rsa | xclip -selection clipboard
+cat ~/.ssh/github-actions-vps
 ```
+Copie o conteúdo no Secret do GitHub. Nunca compartilhe ou faça commit da chave privada. Não use `localhost` ou `127.0.0.1` em `VPS_HOST`: o workflow roda nos servidores do GitHub.
 
 ### 4️⃣ Testar Deploy
 
@@ -78,10 +67,10 @@ git push origin master
 # Veja rodando em tempo real ✨
 ```
 
-### 5️⃣ Confirmar na VPS (Localhost)
+### 5️⃣ Confirmar na VPS
 
 ```bash
-# Verificar se os arquivos foram copiados
+# Na VPS, verificar se os arquivos foram copiados
 ls -la /opt/nginx/html/retro-clipper/
 
 # Você deve ver os arquivos do projeto:
@@ -101,13 +90,13 @@ git push origin master
 # Automáticamente:
 # 1. Build (npm run build)
 # 2. Deploy (/opt/nginx/html/retro-clipper/)
-# 3. Nginx serve em http://localhost/retro-clipper/
+# 3. Nginx serve o site no domínio configurado
 ```
 
 ## 🔍 Verificar que Está Funcionando
 
 ```bash
-# 1. Ver os arquivos
+# 1. Na VPS, ver os arquivos
 ls -lh /opt/nginx/html/retro-clipper/ | head -10
 
 # 2. Contar arquivos
@@ -116,16 +105,15 @@ find /opt/nginx/html/retro-clipper -type f | wc -l
 # 3. Ver tamanho
 du -sh /opt/nginx/html/retro-clipper/
 
-# 4. Testar acesso
-curl http://localhost/retro-clipper/
+# 4. Testar acesso pelo domínio configurado no Nginx
+curl https://retrocore.dev/retro-clipper/
 # Deve retornar o HTML ✅
 ```
 
 ## 🌐 No Navegador
 
 ```
-http://localhost/retro-clipper/
-http://127.0.0.1/retro-clipper/
+https://retrocore.dev/retro-clipper/
 ```
 
 ## 📊 Monitorar Deploy
@@ -157,7 +145,7 @@ Próximos deploys: **~2-3 minutos** (automático!)
 
 | Erro | Solução |
 |------|---------|
-| "Permission denied" | SSH não está funcionando. Teste: `ssh localhost` |
+| "Permission denied" | Confira `VPS_HOST`, `VPS_USER` e se a chave pública correspondente está em `~/.ssh/authorized_keys` do usuário na VPS. Teste localmente com `ssh -i ~/.ssh/github-actions-vps -o IdentitiesOnly=yes SEU_USUARIO@IP_PUBLICO_DA_VPS`. |
 | "Directory not found" | Crie: `mkdir -p /opt/nginx/html/retro-clipper` |
 | Workflow não dispara | Fez push na branch `master` (não main)? |
 | Arquivos não aparecem | Verifique: `ls /opt/nginx/html/retro-clipper/` |

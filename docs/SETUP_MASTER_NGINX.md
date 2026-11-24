@@ -1,12 +1,12 @@
-# 🚀 Setup para Branch Master + Nginx Local
+# 🚀 Setup para Branch Master + Nginx na VPS
 
-Guia para configurar a automação com a branch `master` e usando `/opt/nginx/html/retro-clipper/` como destino.
+Guia para configurar a automação da branch `master` com o Nginx da VPS em `/opt/nginx/html/retro-clipper/`.
 
 ## 🎯 Configuração Específica
 
 Seu projeto:
 - **Branch**: `master` (não main)
-- **Destino**: `/opt/nginx/html/retro-clipper/` (Nginx local)
+- **Destino**: `/opt/nginx/html/retro-clipper/` (na VPS)
 - **Método de cópia**: SSH + `cp` ou `rsync`
 
 ## ⚙️ Secrets do GitHub
@@ -15,20 +15,19 @@ Adicione em: `GitHub Settings → Secrets and variables → Actions`
 
 ```yaml
 VPS_HOST
-Valor: 127.0.0.1 (ou seu IP/hostname)
-Nota: Se for local, pode ser localhost ou o IP da sua máquina
+Valor: IP público ou hostname da VPS (não use localhost/127.0.0.1)
 
 VPS_USER
-Valor: seu-usuario (mesmo usuário que roda Nginx)
-Nota: Deve ter permissões em /opt/nginx/html/
+Valor: conta SSH da VPS que receberá a chave pública
+Nota: Deve ter permissões de escrita em /opt/nginx/html/
 
 VPS_PATH (Alternativa 1 - rsync)
 Valor: /opt/nginx/html/retro-clipper
 Nota: Usado no workflow deploy.yml
 
 SSH_PRIVATE_KEY
-Valor: (Conteúdo completo de ~/.ssh/id_rsa)
-Nota: Inclua as linhas -----BEGIN e -----END
+Valor: Conteúdo completo da chave privada dedicada (sem .pub)
+Nota: Preserve as linhas BEGIN/END e as quebras de linha
 ```
 
 ## 📂 Dois Workflows Disponíveis
@@ -37,10 +36,12 @@ Nota: Inclua as linhas -----BEGIN e -----END
 
 ```bash
 # Localização: .github/workflows/deploy.yml
-# Trigger: Push na branch master
+# Trigger: Manual (workflow_dispatch)
 # Método: rsync (mais eficiente, copia apenas mudanças)
 # Comando: rsync -avz --delete .output/public/ user@host:/opt/nginx/html/retro-clipper/
 ```
+
+Este workflow é manual para evitar que dois deploys publiquem no mesmo diretório ao mesmo tempo. Ele exige também o Secret `VPS_PATH=/opt/nginx/html/retro-clipper`.
 
 **Vantagens:**
 - Mais rápido (copia só mudanças)
@@ -49,70 +50,46 @@ Nota: Inclua as linhas -----BEGIN e -----END
 
 **Como usar:**
 ```bash
-git push origin master
-# GitHub Actions dispara automaticamente
-# Workflow: deploy.yml
+# GitHub → Actions → Build & Deploy to VPS → Run workflow
 ```
 
-### Opção 2: deploy-local.yml (Alternative - scp + cp)
+### Opção 2: deploy-local.yml (SCP)
 
 ```bash
 # Localização: .github/workflows/deploy-local.yml
-# Trigger: Push na branch master
-# Método: scp (copia arquivos) + ssh + cp (copia local)
-# Comando: 
-#   1. SSH: rm -rf /opt/nginx/html/retro-clipper/*
-#   2. SCP: Copia .output/public/* para VPS
-#   3. SSH: cp move arquivos para destino final
+# Trigger automático: Push na branch master; também aceita execução manual
+# Método: SSH remove o conteúdo antigo e SCP envia .output/public para a VPS
 ```
 
 **Vantagens:**
 - Mais simples de entender
-- Funciona bem em redes locais
+- Funciona quando a VPS é acessível pelos runners do GitHub
 
-**Para usar (se preferir):**
-```bash
-# Renomear o workflow
-mv .github/workflows/deploy.yml .github/workflows/deploy-rsync.yml
-mv .github/workflows/deploy-local.yml .github/workflows/deploy.yml
+Somente este workflow publica automaticamente em cada push na `master`. `deploy.yml` fica disponível para deploy manual com rsync.
 
-git push origin master
-# GitHub Actions usa deploy-local.yml
-```
+## 🔐 SSH Setup da VPS
 
-## 🔐 SSH Setup para Localhost/Local
-
-Se está usando localmente (127.0.0.1):
+Gere uma chave dedicada no Linux local e instale a chave pública na conta correta da VPS. O GitHub Actions roda fora da sua máquina, portanto `VPS_HOST` deve ser o endereço público da VPS, não `localhost` ou `127.0.0.1`.
 
 ```bash
-# Sua máquina
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+# No Linux local
+ssh-keygen -t ed25519 -f ~/.ssh/github-actions-vps -C "github-actions-deploy" -N ""
 
-# Autorizar sua própria máquina
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
+# Instalar a chave pública NA VPS
+ssh-copy-id -i ~/.ssh/github-actions-vps.pub SEU_USUARIO@IP_PUBLICO_DA_VPS
 
-# Testar
-ssh localhost
-# Deve logar sem senha ✅
+# Testar a mesma chave e usuário que serão usados no Actions
+ssh -i ~/.ssh/github-actions-vps -o IdentitiesOnly=yes SEU_USUARIO@IP_PUBLICO_DA_VPS
 ```
 
 ## 🛡️ Permissões no Nginx
 
 ```bash
-# No seu servidor (pode ser localhost)
-
-# Criar diretório se não existir
-mkdir -p /opt/nginx/html/retro-clipper
-
-# Dar permissões apropriadas
-# (assumindo que você/seu usuário SSH roda Nginx)
-chmod 755 /opt/nginx/html/retro-clipper
-
-# Testar permissões
+# Na VPS; use o nome do usuário definido em VPS_USER
+sudo mkdir -p /opt/nginx/html/retro-clipper
+sudo chown SEU_USUARIO:SEU_USUARIO /opt/nginx/html/retro-clipper
 touch /opt/nginx/html/retro-clipper/.test
 rm /opt/nginx/html/retro-clipper/.test
-# Deve funcionar sem erro ✅
 ```
 
 ## 📋 Passo a Passo
@@ -120,25 +97,22 @@ rm /opt/nginx/html/retro-clipper/.test
 ### 1. SSH Setup (sua máquina)
 
 ```bash
-# Se ainda não tem SSH com localhost
-ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
-cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-chmod 600 ~/.ssh/authorized_keys
+# Gere uma chave dedicada no Linux local
+ssh-keygen -t ed25519 -f ~/.ssh/github-actions-vps -C "github-actions-deploy" -N ""
 
-# Testar
-ssh localhost
-exit
+# Autorize a chave pública no usuário da VPS
+ssh-copy-id -i ~/.ssh/github-actions-vps.pub SEU_USUARIO@IP_PUBLICO_DA_VPS
+
+# Teste a conexão antes de configurar os Secrets
+ssh -i ~/.ssh/github-actions-vps -o IdentitiesOnly=yes SEU_USUARIO@IP_PUBLICO_DA_VPS
 ```
 
-### 2. Preparar Nginx (sua máquina)
+### 2. Preparar Nginx (na VPS)
 
 ```bash
-# Criar/confirmar diretório
-mkdir -p /opt/nginx/html/retro-clipper
-chmod 755 /opt/nginx/html/retro-clipper
-
-# Testar permissões
-ls -la /opt/nginx/html/ | grep retro-clipper
+# Substitua SEU_USUARIO pelo usuário definido em VPS_USER
+sudo mkdir -p /opt/nginx/html/retro-clipper
+sudo chown SEU_USUARIO:SEU_USUARIO /opt/nginx/html/retro-clipper
 ```
 
 ### 3. GitHub Secrets
@@ -147,14 +121,16 @@ GitHub → Settings → Secrets → 3 secrets:
 
 ```yaml
 VPS_HOST
-127.0.0.1
+IP público ou hostname da VPS
 
 VPS_USER
-seu-usuario-local
+usuário SSH da VPS autorizado para a chave
 
 SSH_PRIVATE_KEY
-(copia de ~/.ssh/id_rsa)
+(conteúdo completo de ~/.ssh/github-actions-vps, sem .pub)
 ```
+
+`SSH_PRIVATE_KEY` é a chave privada; o arquivo `.pub` é a chave pública e deve estar em `~/.ssh/authorized_keys` do usuário da VPS. Nunca compartilhe nem faça commit da chave privada.
 
 ### 4. Testar Deploy
 
@@ -189,9 +165,8 @@ ls -la /opt/nginx/html/retro-clipper/index.html
 # Teste local
 curl http://localhost/retro-clipper/
 
-# Ou no navegador
-http://localhost/retro-clipper/
-http://127.0.0.1/retro-clipper/
+# No navegador, use o domínio público configurado no Nginx
+https://retrocore.dev/retro-clipper/
 ```
 
 ## 🔄 Fluxo Completo
@@ -205,12 +180,12 @@ http://127.0.0.1/retro-clipper/
    └─→ Gera arquivos em .output/public/
    ↓
 4. Deploy SSH
-   └─→ Conecta em 127.0.0.1 com SSH
+   └─→ Conecta ao IP público/hostname da VPS com SSH
    └─→ Executa rsync/scp/cp
    └─→ Copia para /opt/nginx/html/retro-clipper/
    ↓
 5. Pronto! Site atualizado
-   └─→ http://localhost/retro-clipper/ (LIVE)
+   └─→ https://retrocore.dev/retro-clipper/ (LIVE)
 ```
 
 **Tempo total**: ~2-3 minutos
@@ -232,7 +207,7 @@ Logs importantes:
 
 | Erro | Solução |
 |------|---------|
-| "Permission denied (publickey)" | SSH não está configurado. Rodou `ssh localhost` com sucesso? |
+| "Permission denied (publickey)" | Confira `VPS_USER`, `VPS_HOST` e se a chave pública correspondente está em `~/.ssh/authorized_keys` desse usuário na VPS. Teste com `ssh -i ~/.ssh/github-actions-vps -o IdentitiesOnly=yes SEU_USUARIO@IP_PUBLICO_DA_VPS`. |
 | "Directory not found" | `/opt/nginx/html/retro-clipper/` não existe. Crie com `mkdir -p` |
 | "rsync command not found" | SSH na VPS falhou. Testar: `ssh VPS_USER@VPS_HOST "which rsync"` |
 | Arquivos não aparecem | Verificar permissões: `ls -la /opt/nginx/html/retro-clipper/` |
@@ -257,7 +232,7 @@ Se mudar o `baseURL`, precisa fazer rebuild!
 
 1. ✅ Testar primeiro deploy
 2. ✅ Confirmar arquivos em `/opt/nginx/html/retro-clipper/`
-3. ✅ Acessar no navegador: http://localhost/retro-clipper/
+3. ✅ Acessar no navegador: https://retrocore.dev/retro-clipper/
 4. ✅ Fazer mais um push para confirmar que é automático
 
 Depois:
@@ -267,7 +242,8 @@ Depois:
 
 ---
 
-**Branch**: master  
-**Destino**: /opt/nginx/html/retro-clipper/  
-**Método**: rsync (via deploy.yml) ou scp (via deploy-local.yml)  
+**Branch**: master
+**Destino**: /opt/nginx/html/retro-clipper/
+**Deploy automático**: SCP (via deploy-local.yml)
+**Deploy manual alternativo**: rsync (via deploy.yml)
 **Status**: ✅ Pronto para deploy contínuo!

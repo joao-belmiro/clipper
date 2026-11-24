@@ -1,7 +1,6 @@
-name: 🚀 Build & Deploy to Local Nginx
+name: 🚀 Build & Deploy to VPS Nginx (SCP)
 
-# Para usar SSH para conectar na VPS e copiar com cp/rsync
-# Esta é a versão usando cp para copiar os arquivos
+# Esta variante envia os arquivos estáticos para uma VPS remota usando SSH e SCP.
 
 on:
   push:
@@ -38,15 +37,16 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          ssh-keygen -y -f ~/.ssh/id_rsa > /dev/null
           ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
       
-      # 6. Faz deploy dos arquivos para a VPS usando cp via SSH
-      - name: 📤 Deploy to Nginx (via SSH + cp)
+      # 6. Faz deploy dos arquivos para a VPS via SSH e SCP
+      - name: 📤 Deploy to Nginx (via SSH + SCP)
         run: |
-          ssh -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+          ssh -o IdentitiesOnly=yes -i ~/.ssh/id_rsa ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
             "rm -rf /opt/nginx/html/retro-clipper/* && mkdir -p /opt/nginx/html/retro-clipper/"
           
-          scp -i ~/.ssh/id_rsa -r .output/public/* \
+          scp -o IdentitiesOnly=yes -i ~/.ssh/id_rsa -r .output/public/* \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/nginx/html/retro-clipper/
       
       # 7. Notificação de sucesso (opcional)
