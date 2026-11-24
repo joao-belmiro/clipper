@@ -85,7 +85,7 @@ O workflow está em `.github/workflows/deploy.yml` e automatiza:
 Você pode editar o arquivo `deploy.yml` para:
 
 - **Mudar a branch de deploy**: Linha `branches: [main]`
-- **Escolher versão do Node**: Linha `node-version: 18`
+- **Escolher versão do Node**: Linha `node-version: 24`
 - **Mudar diretório de origem**: `source-dir: .output/public`
 - **Mudar diretório de destino**: Adicionar variável `VPS_PATH_CUSTOM`
 
