@@ -4,6 +4,8 @@ Static Nuxt app for managing a private, browser-local clipboard history.
 
 ## Setup
 
+Use Node.js 24.
+
 Make sure to install dependencies:
 
 ```bash

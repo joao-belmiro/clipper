@@ -68,7 +68,7 @@ Workflow GitHub Actions (.github/workflows/deploy.yml)
 │
 ├─ Steps:
 │  1. Checkout do código
-│  2. Setup Node.js 18
+│  2. Setup Node.js 24
 │  3. npm ci (instalar dependências)
 │  4. npm run build (compilar Nuxt)
 │  5. Setup SSH (carregar chave privada)
