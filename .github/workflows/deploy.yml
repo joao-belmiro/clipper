@@ -1,9 +1,9 @@
 name: 🚀 Build & Deploy to VPS
 
-# Trigger automático quando há push na branch main
+# Trigger automático quando há push na branch master
 on:
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch: # Permite disparo manual via GitHub UI
 
 jobs:
