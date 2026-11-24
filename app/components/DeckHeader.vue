@@ -4,7 +4,7 @@
     class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b-2 border-inherit pb-6 mb-6 gap-4 w-full">
     <div>
       <h1 class="text-2xl sm:text-3xl font-bold tracking-wide title-text leading-tight mb-1">&gt;
-        ONLINE CLIPBOARD</h1>
+        FREE ONLINE CLIPBOARD MANAGER</h1>
       <p class="text-[11px] sm:text-xs uppercase tracking-wider font-bold muted-text opacity-90">CLIPPER_v1.0 // FREE
         CLIPBOARD MANAGER &amp; HISTORY</p>
       <p class="mt-2 max-w-xl text-xs leading-relaxed muted-text">

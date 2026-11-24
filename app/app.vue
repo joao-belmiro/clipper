@@ -7,6 +7,7 @@
         <FilterConsole />
         <ClipGrid />
         <ClipPagination />
+        <SeoContent />
         <DeckFooter />
       </div>
     </div>
