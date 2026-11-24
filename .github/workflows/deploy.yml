@@ -30,17 +30,27 @@ jobs:
       
       # 5. Configura SSH para deploy
       - name: 🔐 Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          # Falha aqui se a chave do Secret estiver malformada
+          ssh-keygen -y -f ~/.ssh/id_rsa > /dev/null
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
       
       # 6. Faz deploy dos arquivos para a VPS
       - name: 📤 Deploy to VPS
+        env:
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PATH: ${{ secrets.VPS_PATH }}
         run: |
-          rsync -avz --delete .output/public/ \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/id_rsa -o IdentitiesOnly=yes -o BatchMode=yes" \
+            .output/public/ "$VPS_USER@$VPS_HOST:$VPS_PATH/"
       
       # 7. Notificação de sucesso (opcional)
       - name: ✅ Deployment successful
